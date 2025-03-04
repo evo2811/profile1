@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>game của phong</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            flex-direction: column;
+        }
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(15, 40px);
+            grid-template-rows: repeat(15, 40px);
+            border: 1px solid black;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #000000;
+        }
+        .X {
+            color: rgb(255, 0, 0);
+        }
+        .O {
+            color: rgb(3, 128, 230);
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #replayButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #replayButton:hover{
+            background-color: #367c39;
+        }
+        /* Add style for title */
+        @title{
+            margin-top: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">chào mấy thk nhóc vô đây chúng m tự đi mà chơi 1 mik đi</h1>
+    <div id="gameBoard"></div>
+    <div id="message"></div>
+    <button id="replayButton">Replay</button>
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const message = document.getElementById('message');
+        const replayButton = document.getElementById('replayButton');
+        const boardSize = 15;
+        let board = [];
+        let currentPlayer = 'x';
+        let gameOver = false;
+
+        function createBoard() {
+            for (let i = 0; i < boardSize; i++) {
+                board[i] = [];
+                for (let j = 0; j < boardSize; j++) {
+                    board[i][j] = '';
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', handleClick);
+                    gameBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function handleClick(event) {
+            if (gameOver) return;
+
+            const cell = event.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (board[row][col] === '') {
+                board[row][col] = currentPlayer;
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer.toUpperCase()); // Add class 'X' or 'O'
+
+                if (checkWin(row, col)) {
+                    message.textContent = `Player ${currentPlayer.toUpperCase()} wins!`;
+                    gameOver = true;
+                } else if (checkDraw()) {
+                    message.textContent = "It's a draw!";
+                    gameOver = true;
+                }else {
+                    currentPlayer = currentPlayer === 'x' ? 'o' : 'x';
+                    message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
+                }
+            }
+        }
+
+        function checkWin(row, col) {
+            // Check horizontal
+            if (checkLine(row, col, 0, 1)) return true;
+            // Check vertical
+            if (checkLine(row, col, 1, 0)) return true;
+            // Check diagonal (top-left to bottom-right)
+            if (checkLine(row, col, 1, 1)) return true;
+            // Check diagonal (top-right to bottom-left)
+            if (checkLine(row, col, 1, -1)) return true;
+            return false;
+        }
+
+        function checkLine(row, col, rowIncrement, colIncrement) {
+            let count = 1;
+            let r = row + rowIncrement;
+            let c = col + colIncrement;
+            while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === currentPlayer) {
+                count++;
+                r += rowIncrement;
+                c += colIncrement;
+            }
+            r = row - rowIncrement;
+            c = col - colIncrement;
+            while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === currentPlayer) {
+              count++;
+              r -= rowIncrement;
+              c -= colIncrement;
+            }
+            return count >= 5;
+        }
+
+        function checkDraw() {
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === '') {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function resetGame() {
+            gameOver = false;
+            currentPlayer = 'x';
+            message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
+
+            // Clear the board array
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    board[i][j] = '';
+                }
+            }
+
+            // Clear the game board cells
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('X', 'O');
+            });
+}
+
+        // Replay button event listener
+        replayButton.addEventListener('click', resetGame);
+
+        createBoard();
+        message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
+    </script>
+</body>
+</html>
